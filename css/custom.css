@@ -1,0 +1,79 @@
+:root {
+  --soft-bg: #f8f9fb;
+  --soft-border: rgba(44, 62, 80, 0.12);
+}
+
+body {
+  background-color: var(--soft-bg);
+}
+
+.page-hero {
+  padding: 10rem 0 6rem;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-section {
+  padding: 6rem 0;
+}
+
+.feature-card,
+.search-card,
+.hero-card {
+  border: 1px solid var(--soft-border);
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+  background-color: #fff;
+}
+
+.hero-card {
+  padding: 2rem;
+}
+
+.feature-card {
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.tag-pill {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background-color: rgba(26, 188, 156, 0.12);
+  color: #0f766e;
+  font-size: 0.8rem;
+  margin: 0.2rem 0.25rem 0.2rem 0;
+}
+
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.search-form input {
+  min-width: 220px;
+}
+
+.search-form .btn {
+  white-space: nowrap;
+}
+
+.navbar .nav-link.active {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 991px) {
+  .search-form {
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  .search-form input {
+    min-width: 0;
+    width: 100%;
+  }
+}
