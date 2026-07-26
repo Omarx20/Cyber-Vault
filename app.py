@@ -250,10 +250,10 @@ def login_required(f):
 def home():
     q = request.args.get("q", "").strip()
     db = get_db()
-    projects = db.execute("SELECT * FROM projects ORDER BY id DESC").fetchall()
-    achievements = db.execute("SELECT * FROM achievements ORDER BY id DESC").fetchall()
-    notes = db.execute("SELECT * FROM notes ORDER BY id DESC").fetchall()
-    users = db.execute("SELECT id, username, full_name, bio FROM users ORDER BY id").fetchall()
+    projects = db.execute("SELECT * FROM projects  JOIN users ON users.id = projects.user_id WHERE users.id =?  ORDER BY projects.id DESC", (session.get("user_id"),)).fetchall()
+    achievements = db.execute("SELECT * FROM achievements  JOIN users ON users.id = achievements.user_id WHERE users.id =? ORDER BY achievements.id DESC", (session.get("user_id"),)).fetchall()
+    notes = db.execute("SELECT * FROM notes   JOIN users ON users.id = notes.user_id WHERE users.id =? ORDER BY notes.id DESC", (session.get("user_id"),)).fetchall()
+    users = db.execute("SELECT id, username, full_name, bio FROM users   WHERE id =? ORDER BY id DESC", (session.get("user_id"),)).fetchall()
 
     if q:
         projects = [p for p in projects if q.lower() in (p["title"] + " " + (p["description"] or "")).lower()]
