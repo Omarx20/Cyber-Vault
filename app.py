@@ -262,10 +262,11 @@ def home():
         notes = [n for n in notes if q.lower() in (n["title"] + " " + (n["content"] or "")).lower()]
         users = [u for u in users if q.lower() in ((u["full_name"] or "") + " " + (u["username"] or "") + " " + (u["bio"] or "")).lower()]
 
-    projects1 = db.execute("SELECT * FROM projects  JOIN users ON users.id = projects.user_id WHERE users.id =?  ORDER BY projects.id DESC", (session.get("user_id"),)).fetchall()
-    achievements1 = db.execute("SELECT * FROM achievements  JOIN users ON users.id = achievements.user_id WHERE users.id =? ORDER BY achievements.id DESC", (session.get("user_id"),)).fetchall()
-    notes1 = db.execute("SELECT * FROM notes   JOIN users ON users.id = notes.user_id WHERE users.id =? ORDER BY notes.id DESC", (session.get("user_id"),)).fetchall()
-    users1 = db.execute("SELECT id, username, full_name, bio FROM users   WHERE id =? ORDER BY id DESC", (session.get("user_id"),)).fetchall()
+    projects1 = db.execute("SELECT * FROM projects ORDER BY projects.id DESC").fetchall()
+    achievements1 = db.execute("SELECT * FROM achievements ORDER BY achievements.id DESC").fetchall()
+    notes1 = db.execute("SELECT * FROM notes  ORDER BY id DESC").fetchall()
+    users1 = db.execute("SELECT id, username, full_name, bio FROM users ORDER BY id DESC").fetchall()
+    
     project_cards = "".join(render_project_card(p, editable=bool(session.get("user_id")), project_id=p["id"]) for p in projects1)
     achievement_cards = "".join(
         f'<div class="border rounded p-3 mb-2"><strong>{a["title"]}</strong><p>{a["description"] or ""}</p></div>'
