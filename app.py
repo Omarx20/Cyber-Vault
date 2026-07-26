@@ -250,10 +250,11 @@ def login_required(f):
 def home():
     q = request.args.get("q", "").strip()
     db = get_db()
-    projects = db.execute("SELECT * FROM projects  JOIN users ON users.id = projects.user_id WHERE users.id =?  ORDER BY projects.id DESC", (session.get("user_id"),)).fetchall()
-    achievements = db.execute("SELECT * FROM achievements  JOIN users ON users.id = achievements.user_id WHERE users.id =? ORDER BY achievements.id DESC", (session.get("user_id"),)).fetchall()
-    notes = db.execute("SELECT * FROM notes   JOIN users ON users.id = notes.user_id WHERE users.id =? ORDER BY notes.id DESC", (session.get("user_id"),)).fetchall()
-    users = db.execute("SELECT id, username, full_name, bio FROM users   WHERE id =? ORDER BY id DESC", (session.get("user_id"),)).fetchall()
+    projects = db.execute("SELECT * FROM projects ORDER BY projects.id DESC").fetchall()
+    achievements = db.execute("SELECT * FROM achievements ORDER BY achievements.id DESC").fetchall()
+    notes = db.execute("SELECT * FROM notes  ORDER BY id DESC").fetchall()
+    users = db.execute("SELECT id, username, full_name, bio FROM users ORDER BY id DESC").fetchall()
+
 
     if q:
         projects = [p for p in projects if q.lower() in (p["title"] + " " + (p["description"] or "")).lower()]
@@ -261,18 +262,22 @@ def home():
         notes = [n for n in notes if q.lower() in (n["title"] + " " + (n["content"] or "")).lower()]
         users = [u for u in users if q.lower() in ((u["full_name"] or "") + " " + (u["username"] or "") + " " + (u["bio"] or "")).lower()]
 
-    project_cards = "".join(render_project_card(p, editable=bool(session.get("user_id")), project_id=p["id"]) for p in projects)
+    projects1 = db.execute("SELECT * FROM projects  JOIN users ON users.id = projects.user_id WHERE users.id =?  ORDER BY projects.id DESC", (session.get("user_id"),)).fetchall()
+    achievements1 = db.execute("SELECT * FROM achievements  JOIN users ON users.id = achievements.user_id WHERE users.id =? ORDER BY achievements.id DESC", (session.get("user_id"),)).fetchall()
+    notes1 = db.execute("SELECT * FROM notes   JOIN users ON users.id = notes.user_id WHERE users.id =? ORDER BY notes.id DESC", (session.get("user_id"),)).fetchall()
+    users1 = db.execute("SELECT id, username, full_name, bio FROM users   WHERE id =? ORDER BY id DESC", (session.get("user_id"),)).fetchall()
+    project_cards = "".join(render_project_card(p, editable=bool(session.get("user_id")), project_id=p["id"]) for p in projects1)
     achievement_cards = "".join(
         f'<div class="border rounded p-3 mb-2"><strong>{a["title"]}</strong><p>{a["description"] or ""}</p></div>'
-        for a in achievements
+        for a in achievements1
     )
     note_cards = "".join(
         f'<div class="border rounded p-3 mb-2"><strong>{n["title"]}</strong><p>{n["content"] or ""}</p></div>'
-        for n in notes
+        for n in notes1
     )
     profile_cards = "".join(
         f'<div class="border rounded p-3 mb-2"><strong>{u["full_name"]}</strong><p>@{u["username"]}</p><p>{u["bio"] or ""}</p><a href="{url_for("profile", user_id=u["id"])}">View profile</a></div>'
-        for u in users
+        for u in users1
     )
     profile_section = "" if not q else f"""
     <div class="row g-4 mt-2">
