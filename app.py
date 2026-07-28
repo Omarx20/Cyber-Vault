@@ -513,14 +513,8 @@ def profile(user_id):
     achievements = db.execute("SELECT * FROM achievements WHERE user_id = ? ORDER BY id DESC", (user_id,)).fetchall()
     notes = db.execute("SELECT * FROM notes WHERE user_id = ? ORDER BY id DESC", (user_id,)).fetchall()
     project_cards = "".join(render_project_card(p) for p in projects)
-    achievement_cards = "".join(
-        f'<div class="border rounded p-2 mb-2"><strong>{a["title"]}</strong><p>{a["description"] or ""}</p></div>'
-        for a in achievements
-    )
-    note_cards = "".join(
-        f'<div class="border rounded p-2 mb-2"><strong>{n["title"]}</strong><p>{n["content"] or ""}</p></div>'
-        for n in notes
-    )
+    achievement_cards = "".join(render_achievement_card(a) for a in achievements)
+    note_cards = "".join(render_note_card(n) for n in notes)
     can_edit = bool(current_user and (current_user['id'] == user_id or current_user['is_admin']))
     profile_photo = user['profile_photo'] or ''
     content = f"""
