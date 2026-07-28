@@ -229,8 +229,8 @@ def render_achievement_card(achievement, editable=False, achievement_id=None):
     if editable and achievement_id is not None:
         actions = f'''
         <div class="mt-3 d-flex gap-2">
-          <a class="btn btn-sm btn-outline-primary" href="/project/{achievement_id}/edit">Edit</a>
-          <form method="post" action="/project/{achievement_id}/delete" onsubmit="return confirm('Delete this project?')">
+          <a class="btn btn-sm btn-outline-primary" href="/achievement/{achievement_id}/edit">Edit</a>
+          <form method="post" action="/achievement/{achievement_id}/delete" onsubmit="return confirm('Delete this achievement?')">
             <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
           </form>
         </div>
@@ -243,8 +243,8 @@ def render_note_card(note, editable=False, note_id=None):
     if editable and note_id is not None:
         actions = f'''
         <div class="mt-3 d-flex gap-2">
-          <a class="btn btn-sm btn-outline-primary" href="/project/{note_id}/edit">Edit</a>
-          <form method="post" action="/project/{note_id}/delete" onsubmit="return confirm('Delete this project?')">
+          <a class="btn btn-sm btn-outline-primary" href="/note/{note_id}/edit">Edit</a>
+          <form method="post" action="/note/{note_id}/delete" onsubmit="return confirm('Delete this project?')">
             <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
           </form>
         </div>
