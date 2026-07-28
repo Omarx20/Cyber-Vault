@@ -789,7 +789,7 @@ def edit_note(note_id):
         <h3>Edit note</h3>
         <form method="post">
           <div class="mb-3"><input class="form-control" name="title" value="{note['title']}" required></div>
-          <div class="mb-3"><textarea class="form-control" name="description">{note['description'] or ''}</textarea></div>
+          <div class="mb-3"><textarea class="form-control" name="content">{note['content'] or ''}</textarea></div>
           <button class="btn btn-primary" type="submit">Update</button>
         </form>
       </div>
