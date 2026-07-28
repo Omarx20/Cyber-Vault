@@ -550,14 +550,8 @@ def dashboard():
     achievements = db.execute("SELECT * FROM achievements WHERE user_id = ? ORDER BY id DESC", (session["user_id"],)).fetchall()
     notes = db.execute("SELECT * FROM notes WHERE user_id = ? ORDER BY id DESC", (session["user_id"],)).fetchall()
     project_cards = "".join(render_project_card(p, editable=True, project_id=p["id"]) for p in projects)
-    achievement_cards = "".join(
-        f'<div class="border rounded p-2 mb-2"><strong>{a["title"]}</strong><p>{a["description"] or ""}</p></div>'
-        for a in achievements
-    )
-    note_cards = "".join(
-        f'<div class="border rounded p-2 mb-2"><strong>{n["title"]}</strong><p>{n["content"] or ""}</p></div>'
-        for n in notes
-    )
+    achievement_cards = "".join(render_achievement_card(a) for a in achievements)
+    note_cards = "".join(render_note_card(n) for n in notes)
     content = f"""
     <h2>Welcome, {user['full_name']}!</h2>
     <p class="text-muted">Manage your profile and content below.</p>
