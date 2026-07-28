@@ -223,6 +223,35 @@ def render_project_card(project, editable=False, project_id=None):
     return f'<div class="project-card border rounded p-3 mb-2"><strong>{project["title"]}</strong><p>{project["description"] or ""}</p>{image_html}{url_html}{actions}</div>'
 
 
+
+def render_achievement_card(achievement, editable=False, achievement_id=None):
+    actions = ""
+    if editable and achievement_id is not None:
+        actions = f'''
+        <div class="mt-3 d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="/project/{achievement_id}/edit">Edit</a>
+          <form method="post" action="/project/{achievement_id}/delete" onsubmit="return confirm('Delete this project?')">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+          </form>
+        </div>
+        '''
+    return f'<div class="achievement-card border rounded p-3 mb-2"><strong>{achievement["title"]}</strong><p>{achievement["description"] or ""}</p>{actions}</div>'
+
+
+def render_note_card(note, editable=False, note_id=None):
+    actions = ""
+    if editable and note_id is not None:
+        actions = f'''
+        <div class="mt-3 d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="/project/{note_id}/edit">Edit</a>
+          <form method="post" action="/project/{note_id}/delete" onsubmit="return confirm('Delete this project?')">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+          </form>
+        </div>
+        '''
+    return f'<div class="note-card border rounded p-3 mb-2"><strong>{note["title"]}</strong><p>{note["content"] or ""}</p>{actions}</div>'
+
+
 @app.before_request
 def setup_db():
     init_db()
@@ -273,19 +302,12 @@ def home():
          users = [
                     u for u in users
                         if q.lower() in (
-                            (u["full_name"] or "") + " " +
                             (u["username"] or "")
                              ).lower()
     ]
     project_cards = "".join(render_project_card(p, editable=bool(session.get("user_id")), project_id=p["id"]) for p in projects)
-    achievement_cards = "".join(
-        f'<div class="border rounded p-3 mb-2"><strong>{a["title"]}</strong><p>{a["description"] or ""}</p></div>'
-        for a in achievements
-    )
-    note_cards = "".join(
-        f'<div class="border rounded p-3 mb-2"><strong>{n["title"]}</strong><p>{n["content"] or ""}</p></div>'
-        for n in notes
-    )
+    achievement_cards = "".join(render_achievement_card(a, editable=bool(session.get("user_id")), achievement_id=a["id"]) for a in achievements)
+    note_cards = "".join(render_note_card(n, editable=bool(session.get("user_id")), note_id=n["id"]) for n in notes)
     profile_cards = "".join(
         f'<div class="border rounded p-3 mb-2"><strong>{u["full_name"]}</strong><p>@{u["username"]}</p><p>{u["bio"] or ""}</p><a href="{url_for("profile", user_id=u["id"])}">View profile</a></div>'
         for u in users
@@ -708,6 +730,85 @@ def add_achievement():
 def add_note():
     db = get_db()
     db.execute("INSERT INTO notes (user_id, title, content) VALUES (?, ?, ?)", (session["user_id"], request.form["title"], request.form.get("content", "")))
+    db.commit()
+    return redirect(url_for("dashboard"))
+
+@app.route("/achievement/<int:achievement_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_achievements(achievement_id):
+    db = get_db()
+    achievement = db.execute("SELECT * FROM achievements WHERE id = ? AND user_id = ?", (achievement_id, session["user_id"])).fetchone()
+    if not achievement:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        db.execute(
+            "UPDATE achievements SET title = ?, description = ? WHERE id = ?",
+            (request.form["title"], request.form.get("description", ""), achievement_id),
+        )
+        db.commit()
+        return redirect(url_for("dashboard"))
+
+    content = f"""
+    <div class="card mx-auto" style="max-width: 600px;">
+      <div class="card-body">
+        <h3>Edit Achievement</h3>
+        <form method="post">
+          <div class="mb-3"><input class="form-control" name="title" value="{achievement['title']}" required></div>
+          <div class="mb-3"><textarea class="form-control" name="description">{achievement['description'] or ''}</textarea></div>
+          <button class="btn btn-primary" type="submit">Update</button>
+        </form>
+      </div>
+    </div>
+    """
+    return render_template_string(HTML_TEMPLATE, title="Edit Achievement", content=content)
+
+
+@app.route("/achievement/<int:achievement_id>/delete", methods=["POST"])
+@login_required
+def delete_achievement(achievement_id):
+    db = get_db()
+    db.execute("DELETE FROM achievements WHERE id = ? AND user_id = ?", (achievement_id, session["user_id"]))
+    db.commit()
+    return redirect(url_for("dashboard"))
+
+
+@app.route("/note/<int:note_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_note(note_id):
+    db = get_db()
+    note = db.execute("SELECT * FROM notes WHERE id = ? AND user_id = ?", (note_id, session["user_id"])).fetchone()
+    if not note:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        db.execute(
+            "UPDATE notes SET title = ?, content = ? WHERE id = ?",
+            (request.form["title"], request.form.get("content", ""), note_id),
+        )
+        db.commit()
+        return redirect(url_for("dashboard"))
+
+    content = f"""
+    <div class="card mx-auto" style="max-width: 600px;">
+      <div class="card-body">
+        <h3>Edit note</h3>
+        <form method="post">
+          <div class="mb-3"><input class="form-control" name="title" value="{note['title']}" required></div>
+          <div class="mb-3"><textarea class="form-control" name="description">{note['description'] or ''}</textarea></div>
+          <button class="btn btn-primary" type="submit">Update</button>
+        </form>
+      </div>
+    </div>
+    """
+    return render_template_string(HTML_TEMPLATE, title="Edit note", content=content)
+
+
+@app.route("/note/<int:note_id>/delete", methods=["POST"])
+@login_required
+def delete_note(note_id):
+    db = get_db()
+    db.execute("DELETE FROM notes WHERE id = ? AND user_id = ?", (note_id, session["user_id"]))
     db.commit()
     return redirect(url_for("dashboard"))
 
